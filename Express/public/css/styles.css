@@ -1,0 +1,30 @@
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.Title {
+    color: green;
+}
+
+.plants{
+    color: rosybrown;
+}
+
+.botton{
+    color: firebrick;
+
+
+}
+
+.plant-card p {
+    margin: 10px 0;
+    font-size: 16px;
+    color: #666;
+}
+

@@ -1,0 +1,22 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "My web app project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdrianGonzalez878/IT-122.git"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "Adrian Gonzalez",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^18.0.6",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2"
+  }
+}
