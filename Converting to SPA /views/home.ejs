@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>List of Books</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <!-- Cargar React y ReactDOM desde CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body>
+
+  <div id="root"></div> <!-- Aquí se montará la app de React -->
+
+  <script type="text/babel">
+    let books = <%- books %>; // Obtener libros desde el servidor
+
+    // Componente de Lista de Libros
+    function BookList({ books }) {
+      if (books.length === 0) {
+        return <p>No books available.</p>;
+      }
+      return (
+        <ul>
+          {books.map((book) => (
+            <li key={book._id}>
+              <a href={`/book/${book._id}`} onClick={(e) => {
+                e.preventDefault(); // Evita la recarga de la página
+                console.log(`Navigated to book: ${book._id}`);
+                // Cambiar la URL sin recargar la página
+                window.history.pushState({}, '', `/book/${book._id}`);
+                // Llamar a la función para cargar los detalles del libro
+                loadBookDetails(book._id);
+              }}>
+                {book.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    // Función para cargar los detalles del libro
+    function loadBookDetails(bookId) {
+      // Usamos fetch para obtener los detalles del libro desde la API
+      fetch(`/api/books/${bookId}`)
+        .then(response => response.json())
+        .then(book => {
+          // Actualizar el contenido con los detalles del libro
+          document.getElementById('root').innerHTML = `
+            <h1>Details of "${book.title}"</h1>
+            <ul>
+              <li><b>Autor:</b> ${book.author}</li>
+              <li><b>Publication date:</b> ${new Date(book.publicationDate).toDateString()}</li>
+              <li><b>In Store:</b> ${book.inStore ? 'yes' : 'No'}</li>
+            </ul>
+            <a href="/" class="back-button">⬅ Home</a>
+            <button onclick="confirmDelete('${book._id}')" class="delete-button">Delete</button>
+          `;
+        })
+        .catch(error => console.error('Error fetching book details:', error));
+    }
+
+    // Función para confirmar la eliminación del libro
+    function confirmDelete(id) {
+      if (confirm("¿Are you sure you want to delete this book?")) {
+        window.location.href = `/delete/${id}`;
+      }
+    }
+
+    // Componente Principal
+    function App() {
+      return (
+        <div>
+          <h1>List of Books</h1>
+          <BookList books={books} />
+        </div>
+      );
+    }
+
+    // Renderizar en el div con id "root"
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+    // Verificar si estamos en una página de detalle y cargar el libro correspondiente
+    window.addEventListener('popstate', () => {
+      const path = window.location.pathname;
+      const match = path.match(/\/book\/([a-f0-9]{24})/);
+      if (match) {
+        loadBookDetails(match[1]);  // Cargar los detalles del libro según la URL
+      }
+    });
+
+    // Si ya estamos en una página de detalle cuando se carga la página
+    const path = window.location.pathname;
+    const match = path.match(/\/book\/([a-f0-9]{24})/);
+    if (match) {
+      loadBookDetails(match[1]);  // Cargar los detalles del libro
+    }
+  </script>
+</body>
+</html>
