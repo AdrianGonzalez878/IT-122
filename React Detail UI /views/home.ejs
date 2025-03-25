@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book List</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    function App() {
+      const [books, setBooks] = React.useState([]);
+      const [selectedBook, setSelectedBook] = React.useState(null);
+      const [formData, setFormData] = React.useState({ title: '', author: '', publicationDate: '' });
+      
+      React.useEffect(() => {
+        fetch('/api/books')
+          .then(response => response.json())
+          .then(data => setBooks(data));
+      }, []);
+      
+      function handleSelectBook(book) {
+        setSelectedBook(book);
+        setFormData({ title: book.title, author: book.author, publicationDate: book.publicationDate });
+      }
+      
+      function handleChange(event) {
+        const { name, value } = event.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+      
+      function clearForm() {
+        setFormData({ title: '', author: '', publicationDate: '' });
+      }
+      
+      return (
+        <div className="container">
+          <h1>Book List</h1>
+          <div className="content">
+            <ul className="book-list">
+              {books.map(book => (
+                <li key={book._id} onClick={() => handleSelectBook(book)}>{book.title}</li>
+              ))}
+            </ul>
+            {selectedBook && (
+              <div className="book-detail">
+                <h2>Details of {selectedBook.title}</h2>
+                <form>
+                  <label>Title: <input type="text" name="title" value={formData.title} onChange={handleChange} /></label>
+                  <label>Author: <input type="text" name="author" value={formData.author} onChange={handleChange} /></label>
+                  <label>Publication Date: <input type="Date" name="publicationDate" value={formData.publicationDate} onChange={handleChange} /></label>
+                  <button type="button" onClick={clearForm}>Clear</button>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+  
+</body>
+</html>
