@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book List</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <script type="text/babel">
+    function App() {
+      const [books, setBooks] = React.useState([]);
+      const [selectedBook, setSelectedBook] = React.useState(null);
+      const [formData, setFormData] = React.useState({ title: '', author: '', publicationdate: '' });
+
+      // Cargar libros desde la API
+      React.useEffect(() => {
+        fetch('/api/books')
+          .then(response => response.json())
+          .then(data => setBooks(data))
+          .catch(error => console.error("Error fetching books:", error));
+      }, []);
+
+      // Seleccionar libro y llenar el formulario
+      function handleSelectBook(book) {
+        setSelectedBook(book);
+        setFormData({ title: book.title, author: book.author, publicationdate: book.publicationdate });
+      }
+
+      // Manejar cambios en el formulario
+      function handleChange(event) {
+        const { name, value } = event.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+
+      // Limpiar formulario
+      function clearForm() {
+        setSelectedBook(null);
+        setFormData({ title: '', author: '', publicationdate: '' });
+      }
+
+      // Guardar o actualizar libro en la BD
+      function handleSave() {
+        if (!formData.title || !formData.author || !formData.publicationdate) {
+          alert("All fields are required");
+          return;
+        }
+
+        // Verificar si estamos actualizando un libro existente o creando uno nuevo
+        const url = selectedBook ? `/api/books/${selectedBook._id}` : "/api/books";
+        const method = selectedBook ? "PUT" : "POST";
+
+        // Si es una actualización, enviamos el _id junto con los demás campos
+        const dataToSend = selectedBook ? { ...formData, _id: selectedBook._id } : formData;
+
+        // Realizar la solicitud al backend
+        fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dataToSend)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (selectedBook) {
+            // Si estamos actualizando un libro, reemplazamos el libro en la lista
+            setBooks(prevBooks => prevBooks.map(book => book._id === data.book._id ? data.book : book));
+          } else {
+            // Si estamos creando un libro, lo agregamos a la lista
+            setBooks(prevBooks => [...prevBooks, data.book]);
+          }
+
+          clearForm(); // Limpiar formulario después de guardar
+        })
+        .catch(error => console.error("Error saving book:", error));
+      }
+
+
+      // Eliminar libro de la BD
+      function handleDelete() {
+        if (selectedBook) {
+          fetch(`/api/books/${selectedBook._id}`, { method: 'DELETE' })
+            .then(() => {
+              setBooks(prevBooks => prevBooks.filter(book => book._id !== selectedBook._id));
+              clearForm();
+            })
+            .catch(error => console.error("Error deleting book:", error));
+        }
+      }
+
+      return (
+        <div className="container">
+          <h1>Book List</h1>
+          <div className="content">
+            <ul className="book-list">
+              {books.map(book => (
+                <li key={book._id} onClick={() => handleSelectBook(book)}>
+                  {book.title}
+                </li>
+              ))}
+            </ul>
+
+            <div className="book-detail">
+              <h2>{selectedBook ? `Details of ${selectedBook.title}` : "Add New Book"}</h2>
+              <form>
+                <label>Title: <input type="text" name="title" value={formData.title} onChange={handleChange} /></label>
+                <label>Author: <input type="text" name="author" value={formData.author} onChange={handleChange} /></label>
+                <label>Publication Date: <input type="date" name="publicationdate" value={formData.publicationdate} onChange={handleChange} /></label>
+                
+                <button type="button" onClick={handleSave}>Save</button>
+                {selectedBook && <button type="button" onClick={handleDelete}>Delete</button>}
+                <button type="button" onClick={clearForm}>Clear</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "target": "ES6",                        // Esto asegura que el código se compilará a JavaScript ES6
+      "module": "ESNext",                     // Utiliza el módulo ESNext para los imports/export
+      "moduleResolution": "node",             // Resolución de módulos usando la estrategia de Node.js
+      "strict": true,                         // Habilita las comprobaciones estrictas de tipo
+      "esModuleInterop": true,                // Habilita la interoperabilidad entre módulos CommonJS y ESModules
+      "skipLibCheck": true,                   // Ignora la comprobación de los archivos de definición de tipo
+      "forceConsistentCasingInFileNames": true, // Asegura consistencia en el uso de mayúsculas/minúsculas en los nombres de los archivos
+      "outDir": "./dist",                     // Directorio de salida para los archivos compilados
+      "baseUrl": ".",                         // Base URL para resolver módulos
+      "paths": {
+        "*": ["node_modules/*"]
+      }
+    },
+    "include": [
+      "*.ts"                           // Compila todos los archivos .ts en la carpeta 'src' y subcarpetas
+    ],
+    "exclude": [
+      "node_modules"                          // Excluye la carpeta 'node_modules'
+    ]
+  }
+  
